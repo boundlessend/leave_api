@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from datetime import date, datetime
 from typing import Optional
+from uuid import UUID
 
 from pydantic import (
     BaseModel,
@@ -43,14 +44,14 @@ class LeaveRequestReject(BaseModel):
 class LeaveRequestRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
-    id: int
-    user_id: int
+    id: UUID
+    user_id: UUID
     start_date: date
     end_date: date
     reason: Optional[str]
     status: str
     manager_comment: Optional[str]
-    processed_by_id: Optional[int]
+    processed_by_id: Optional[UUID]
     processed_at: Optional[datetime]
     created_at: datetime
     updated_at: datetime

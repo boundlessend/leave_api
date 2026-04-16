@@ -1,14 +1,18 @@
-from typing import Any
-
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
 
 class AppException(Exception):
+    """базовая прикладная ошибка"""
+
     def __init__(
-        self, status_code: int, code: str, message: str, details: Any = None
+        self,
+        status_code: int,
+        code: str,
+        message: str,
+        details: object | None = None,
     ):
         self.status_code = status_code
         self.code = code
@@ -18,7 +22,7 @@ class AppException(Exception):
 
 
 async def app_exception_handler(_: Request, exc: AppException) -> JSONResponse:
-    """рендерит прикладную ошибку в единый формат"""
+    """обрабатывает прикладные ошибки"""
     return JSONResponse(
         status_code=exc.status_code,
         content={
@@ -34,9 +38,9 @@ async def app_exception_handler(_: Request, exc: AppException) -> JSONResponse:
 async def validation_exception_handler(
     _: Request, exc: RequestValidationError
 ) -> JSONResponse:
-    """рендерит ошибки валидации в единый формат"""
+    """обрабатывает ошибки валидации"""
     return JSONResponse(
-        status_code=422,
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
         content={
             "error": {
                 "code": "validation_error",
@@ -47,12 +51,10 @@ async def validation_exception_handler(
     )
 
 
-async def unexpected_exception_handler(
-    _: Request, exc: Exception
-) -> JSONResponse:
-    """рендерит неожиданные ошибки без утечки деталей"""
+async def unexpected_exception_handler(_: Request, exc: Exception) -> JSONResponse:
+    """обрабатывает неожиданные ошибки"""
     return JSONResponse(
-        status_code=500,
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         content={
             "error": {
                 "code": "internal_server_error",

@@ -1,4 +1,5 @@
 from typing import Annotated
+from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query, status
 
@@ -16,7 +17,7 @@ router = APIRouter(tags=["admin"])
     status_code=status.HTTP_200_OK,
 )
 def approve_leave_request(
-    request_id: int,
+    request_id: UUID,
     db: DbSession,
     current_admin: Annotated[User, Depends(get_current_admin)],
 ) -> LeaveRequestRead:
@@ -30,7 +31,7 @@ def approve_leave_request(
     status_code=status.HTTP_200_OK,
 )
 def reject_leave_request(
-    request_id: int,
+    request_id: UUID,
     payload: LeaveRequestReject,
     db: DbSession,
     current_admin: Annotated[User, Depends(get_current_admin)],

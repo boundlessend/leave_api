@@ -146,4 +146,3 @@ def login(client: TestClient, email: str, password: str) -> dict[str, str]:
     )
     assert response.status_code == 200, response.text
     return response.json()
-

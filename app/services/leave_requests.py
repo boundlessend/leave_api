@@ -1,11 +1,12 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from uuid import UUID
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.api.errors import AppException
+from app.core.time import now_moscow
 from app.db.models import LeaveRequest, User
 from app.schemas.leave_request import LeaveRequestCreate, LeaveRequestReject
 
@@ -33,7 +34,7 @@ class LeaveRequestService:
                 "leave_request_overlap",
                 "есть пересечение с существующей заявкой",
                 details={
-                    "existing_request_id": overlap.id,
+                    "existing_request_id": str(overlap.id),
                     "existing_status": overlap.status,
                 },
             )
@@ -51,7 +52,7 @@ class LeaveRequestService:
         return leave_request
 
     def list_user_requests(
-        self, user_id: int, status: str | None = None
+        self, user_id: UUID, status: str | None = None
     ) -> list[LeaveRequest]:
         """возвращает заявки пользователя"""
         query = select(LeaveRequest).where(LeaveRequest.user_id == user_id)
@@ -74,33 +75,33 @@ class LeaveRequestService:
         )
         return list(self.db.scalars(query).all())
 
-    def approve_request(self, request_id: int, admin: User) -> LeaveRequest:
+    def approve_request(self, request_id: UUID, admin: User) -> LeaveRequest:
         """согласует pending заявку"""
         leave_request = self._get_request_or_404(request_id)
         self._assert_pending(leave_request)
         leave_request.status = "approved"
         leave_request.processed_by_id = admin.id
-        leave_request.processed_at = datetime.now(timezone.utc)
+        leave_request.processed_at = now_moscow()
         leave_request.manager_comment = None
         self.db.commit()
         self.db.refresh(leave_request)
         return leave_request
 
     def reject_request(
-        self, request_id: int, admin: User, payload: LeaveRequestReject
+        self, request_id: UUID, admin: User, payload: LeaveRequestReject
     ) -> LeaveRequest:
         """отклоняет pending заявку"""
         leave_request = self._get_request_or_404(request_id)
         self._assert_pending(leave_request)
         leave_request.status = "rejected"
         leave_request.processed_by_id = admin.id
-        leave_request.processed_at = datetime.now(timezone.utc)
+        leave_request.processed_at = now_moscow()
         leave_request.manager_comment = payload.manager_comment
         self.db.commit()
         self.db.refresh(leave_request)
         return leave_request
 
-    def _get_request_or_404(self, request_id: int) -> LeaveRequest:
+    def _get_request_or_404(self, request_id: UUID) -> LeaveRequest:
         """ищет заявку по id"""
         leave_request = self.db.get(LeaveRequest, request_id)
         if leave_request is None:

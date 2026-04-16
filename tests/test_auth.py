@@ -10,6 +10,7 @@ def test_login_and_me(client, regular_user):
 
     assert response.status_code == 200
     assert response.json()["email"] == regular_user.email
+    assert response.json()["id"] == str(regular_user.id)
 
 
 def test_invalid_credentials(client, regular_user):
@@ -56,3 +57,18 @@ def test_logout_invalidates_current_access_token(client, regular_user):
     assert logout_response.json()["message"] == "ok"
     assert me_response.status_code == 401
     assert me_response.json()["error"]["code"] == "invalid_token"
+
+
+def test_logout_invalidates_refresh_token(client, regular_user):
+    tokens = login(client, "user@example.com", "user123")
+    headers = {"Authorization": f"Bearer {tokens['access_token']}"}
+
+    logout_response = client.post("/api/auth/logout", headers=headers)
+    refresh_response = client.post(
+        "/api/auth/jwt/refresh",
+        json={"refresh_token": tokens["refresh_token"]},
+    )
+
+    assert logout_response.status_code == 200
+    assert refresh_response.status_code == 401
+    assert refresh_response.json()["error"]["code"] == "invalid_token"

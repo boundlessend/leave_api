@@ -43,7 +43,11 @@ def get_current_user(
 ) -> User:
     """возвращает текущего пользователя по access token"""
     token_data = decode_token(access_token, expected_type="access")
-    if not redis.get(f"access:{token_data.jti}"):
+    access_session_id = redis.get(f"access:{token_data.jti}")
+    session_payload = redis.get(f"session:{token_data.session_id}")
+    if isinstance(access_session_id, bytes):
+        access_session_id = access_session_id.decode("utf-8")
+    if access_session_id != token_data.session_id or session_payload is None:
         raise AppException(401, "invalid_token", "невалидный токен")
 
     user = db.get(User, token_data.user_id)

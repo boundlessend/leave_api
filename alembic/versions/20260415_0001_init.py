@@ -17,7 +17,7 @@ depends_on = None
 def upgrade() -> None:
     op.create_table(
         "users",
-        sa.Column("id", sa.Integer(), primary_key=True),
+        sa.Column("id", sa.Uuid(), primary_key=True),
         sa.Column("email", sa.String(length=255), nullable=False),
         sa.Column("username", sa.String(length=150), nullable=False),
         sa.Column("hashed_password", sa.String(length=255), nullable=False),
@@ -31,7 +31,7 @@ def upgrade() -> None:
             "created_at",
             sa.DateTime(timezone=True),
             nullable=False,
-            server_default=sa.text("now()"),
+            server_default=sa.text("timezone('Europe/Moscow', now())"),
         ),
     )
     op.create_index("ix_users_email", "users", ["email"], unique=True)
@@ -39,8 +39,8 @@ def upgrade() -> None:
 
     op.create_table(
         "leave_requests",
-        sa.Column("id", sa.Integer(), primary_key=True),
-        sa.Column("user_id", sa.Integer(), nullable=False),
+        sa.Column("id", sa.Uuid(), primary_key=True),
+        sa.Column("user_id", sa.Uuid(), nullable=False),
         sa.Column("start_date", sa.Date(), nullable=False),
         sa.Column("end_date", sa.Date(), nullable=False),
         sa.Column("reason", sa.Text(), nullable=True),
@@ -51,19 +51,19 @@ def upgrade() -> None:
             server_default="pending",
         ),
         sa.Column("manager_comment", sa.Text(), nullable=True),
-        sa.Column("processed_by_id", sa.Integer(), nullable=True),
+        sa.Column("processed_by_id", sa.Uuid(), nullable=True),
         sa.Column("processed_at", sa.DateTime(timezone=True), nullable=True),
         sa.Column(
             "created_at",
             sa.DateTime(timezone=True),
             nullable=False,
-            server_default=sa.text("now()"),
+            server_default=sa.text("timezone('Europe/Moscow', now())"),
         ),
         sa.Column(
             "updated_at",
             sa.DateTime(timezone=True),
             nullable=False,
-            server_default=sa.text("now()"),
+            server_default=sa.text("timezone('Europe/Moscow', now())"),
         ),
         sa.ForeignKeyConstraint(
             ["processed_by_id"], ["users.id"], ondelete="SET NULL"

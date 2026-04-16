@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from datetime import date, datetime
 from typing import Optional
+from uuid import UUID, uuid4
 
 from sqlalchemy import (
     Boolean,
@@ -9,12 +10,13 @@ from sqlalchemy import (
     Date,
     DateTime,
     ForeignKey,
-    Integer,
     String,
     Text,
-    func,
+    Uuid,
 )
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+
+from app.core.time import now_moscow
 
 
 class Base(DeclarativeBase):
@@ -24,7 +26,9 @@ class Base(DeclarativeBase):
 class User(Base):
     __tablename__ = "users"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    id: Mapped[UUID] = mapped_column(
+        Uuid, primary_key=True, default=uuid4
+    )
     email: Mapped[str] = mapped_column(
         String(255), unique=True, nullable=False, index=True
     )
@@ -39,7 +43,7 @@ class User(Base):
         Boolean, nullable=False, default=False
     )
     created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False, server_default=func.now()
+        DateTime(timezone=True), nullable=False, default=now_moscow
     )
 
     leave_requests: Mapped[list["LeaveRequest"]] = relationship(
@@ -65,8 +69,10 @@ class LeaveRequest(Base):
         ),
     )
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    user_id: Mapped[int] = mapped_column(
+    id: Mapped[UUID] = mapped_column(
+        Uuid, primary_key=True, default=uuid4
+    )
+    user_id: Mapped[UUID] = mapped_column(
         ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
     )
     start_date: Mapped[date] = mapped_column(Date, nullable=False)
@@ -76,20 +82,20 @@ class LeaveRequest(Base):
         String(20), nullable=False, default="pending", index=True
     )
     manager_comment: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    processed_by_id: Mapped[Optional[int]] = mapped_column(
+    processed_by_id: Mapped[Optional[UUID]] = mapped_column(
         ForeignKey("users.id", ondelete="SET NULL"), nullable=True
     )
     processed_at: Mapped[Optional[datetime]] = mapped_column(
         DateTime(timezone=True), nullable=True
     )
     created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False, server_default=func.now()
+        DateTime(timezone=True), nullable=False, default=now_moscow
     )
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         nullable=False,
-        server_default=func.now(),
-        onupdate=func.now(),
+        default=now_moscow,
+        onupdate=now_moscow,
     )
 
     user: Mapped[User] = relationship(

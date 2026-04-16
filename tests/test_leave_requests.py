@@ -1,4 +1,5 @@
 from datetime import date
+from uuid import uuid4
 
 from app.db.models import LeaveRequest
 from tests.conftest import login
@@ -34,7 +35,7 @@ def test_owner_sees_only_own_requests(
     assert response.status_code == 200
     data = response.json()
     assert len(data) == 1
-    assert data[0]["user_id"] == regular_user.id
+    assert data[0]["user_id"] == str(regular_user.id)
 
 
 def test_admin_sees_all_requests(
@@ -166,7 +167,7 @@ def test_admin_can_reject_with_comment_and_filter_by_status(
 def test_request_not_found_returns_404(client, admin_user):
     tokens = login(client, "admin@example.com", "admin123")
     response = client.patch(
-        "/api/leave-requests/999/approve",
+        f"/api/leave-requests/{uuid4()}/approve",
         headers={"Authorization": f"Bearer {tokens['access_token']}"},
     )
 
