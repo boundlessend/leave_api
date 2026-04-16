@@ -51,7 +51,9 @@ async def validation_exception_handler(
     )
 
 
-async def unexpected_exception_handler(_: Request, exc: Exception) -> JSONResponse:
+async def unexpected_exception_handler(
+    _: Request, exc: Exception
+) -> JSONResponse:
     """обрабатывает неожиданные ошибки"""
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

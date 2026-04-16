@@ -81,7 +81,9 @@ class AuthService:
             "refresh_jti": refresh_data.jti,
         }
         self.redis.setex(
-            self._access_key(access_data.jti), access_ttl, access_data.session_id
+            self._access_key(access_data.jti),
+            access_ttl,
+            access_data.session_id,
         )
         self.redis.setex(
             self._refresh_key(refresh_data.jti),

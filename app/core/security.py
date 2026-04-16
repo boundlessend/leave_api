@@ -122,10 +122,20 @@ def decode_token(token: str, expected_type: str) -> TokenData:
             message="невалидный токен",
         )
 
+    try:
+        user_id = UUID(str(sub))
+        expires_at = int(exp)
+    except (TypeError, ValueError) as exc:
+        raise AppException(
+            status_code=401,
+            code="invalid_token",
+            message="невалидный токен",
+        ) from exc
+
     return TokenData(
-        user_id=UUID(str(sub)),
+        user_id=user_id,
         jti=str(jti),
         session_id=str(session_id),
         token_type=str(token_type),
-        exp=int(exp),
+        exp=expires_at,
     )

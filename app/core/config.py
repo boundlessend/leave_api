@@ -13,9 +13,7 @@ class Settings(BaseSettings):
     app_host: str = Field(default="0.0.0.0", alias="APP_HOST")
     app_port: int = Field(default=8000, alias="APP_PORT")
     debug: bool = Field(default=False, alias="DEBUG")
-    timezone_name: str = Field(
-        default="Europe/Moscow", alias="TIMEZONE_NAME"
-    )
+    timezone_name: str = Field(default="Europe/Moscow", alias="TIMEZONE_NAME")
     database_url: str = Field(
         default="postgresql+psycopg://postgres:postgres@localhost:5432/leave_requests",
         alias="DATABASE_URL",

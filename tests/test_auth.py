@@ -1,3 +1,6 @@
+import jwt
+
+from app.core.config import settings
 from tests.conftest import login
 
 
@@ -27,6 +30,27 @@ def test_invalid_access_token(client):
     response = client.get(
         "/api/auth/users/me",
         headers={"Authorization": "Bearer wrong-token"},
+    )
+
+    assert response.status_code == 401
+    assert response.json()["error"]["code"] == "invalid_token"
+
+
+def test_invalid_access_token_with_malformed_uuid_claim(client):
+    token = jwt.encode(
+        {
+            "sub": "not-a-uuid",
+            "jti": "test-jti",
+            "sid": "test-session",
+            "type": "access",
+            "exp": 4102444800,
+        },
+        settings.jwt_secret_key,
+        algorithm=settings.jwt_algorithm,
+    )
+    response = client.get(
+        "/api/auth/users/me",
+        headers={"Authorization": f"Bearer {token}"},
     )
 
     assert response.status_code == 401
